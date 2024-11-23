@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IzhyAI Chat</title>
+    <title>IzhyAi</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>:root {
+    <style>/* Base styles */
+:root {
     --bg-color: #343541;
     --chat-bg: #444654;
     --user-msg-bg: #343541;
@@ -32,8 +33,54 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: relative;
 }
 
+/* Intro Overlay */
+#intro-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.3s ease, visibility 0.3s;
+}
+
+#intro-overlay.hide {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.typing-content {
+    text-align: center;
+    max-width: 800px;
+    padding: 0 20px;
+}
+
+.typing-text {
+    font-size: 1.5rem;
+    line-height: 1.4;
+    color: var(--text-color);
+    text-align: center;
+}
+
+.typing-text::after {
+    content: '|';
+    margin-left: 2px;
+    animation: cursor 0.8s infinite;
+}
+
+@keyframes cursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Main Content */
 .header {
     display: flex;
     flex-direction: column;
@@ -43,7 +90,7 @@ body {
     border-bottom: 1px solid var(--border-color);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     position: relative;
-    z-index: 10;
+    z-index: 1;
 }
 
 .header h1 {
@@ -68,6 +115,7 @@ body {
     position: relative;
     height: calc(100vh - 140px);
     overflow: hidden;
+    z-index: 1;
 }
 
 #messages {
@@ -134,7 +182,7 @@ body {
     background-color: var(--bg-color);
     border-top: 1px solid var(--border-color);
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
+    z-index: 2;
 }
 
 #input-box {
@@ -147,6 +195,7 @@ body {
     border-radius: 12px;
     transition: all 0.3s ease;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding-right: 60px;
 }
 
 #input-box:focus-within {
@@ -156,7 +205,7 @@ body {
 
 #user-input {
     flex: 1;
-    padding: 0.75rem 4.5rem 0.75rem 1rem;
+    padding: 0.75rem 1rem;
     background: transparent;
     border: none;
     color: var(--text-color);
@@ -174,7 +223,8 @@ body {
 #send-button {
     position: absolute;
     right: 8px;
-    bottom: 8px;
+    top: 50%;
+    transform: translateY(-50%);
     background: linear-gradient(45deg, #5436DA, #19c37d);
     border: none;
     color: white;
@@ -188,6 +238,8 @@ body {
     align-items: center;
     gap: 6px;
     height: 36px;
+    min-width: 44px;
+    justify-content: center;
 }
 
 #send-button:hover {
@@ -266,7 +318,7 @@ body {
     padding: 0.5rem;
     opacity: 0.7;
     transition: all 0.3s ease;
-    z-index: 1000;
+    z-index: 2;
 }
 
 #settings-button:hover {
@@ -282,7 +334,7 @@ body {
     background-color: var(--chat-bg);
     padding: 2rem;
     border-radius: 12px;
-    z-index: 1001;
+    z-index: 2001;
     display: none;
     opacity: 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -399,6 +451,23 @@ body {
     }
 }
 
+@keyframes fadeInText {
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        visibility: visible;
+    }
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     .header h1 {
@@ -426,9 +495,16 @@ body {
         max-width: 400px;
         padding: 1.5rem;
     }
-}</style>
+}
+</style>
 </head>
 <body>
+    <div id="intro-overlay">
+        <div class="typing-content">
+            <div class="typing-text"></div>
+        </div>
+    </div>
+
     <div class="header">
         <h1>IzhyAi</h1>
         <p>by izhaan</p>
@@ -475,6 +551,33 @@ body {
     <div class="overlay"></div>
 
     <script>
+        // Set up typing animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const text = "Experience limitless AI chat - No login, no data storage, just pure conversation.";
+            const typingText = document.querySelector('.typing-text');
+            const introOverlay = document.getElementById('intro-overlay');
+            let i = 0;
+            
+            function typeWriter() {
+                if (i < text.length) {
+                    typingText.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 50);
+                } else {
+                    // After typing is done, wait 1 second and remove overlay
+                    setTimeout(() => {
+                        introOverlay.classList.add('hide');
+                        // Remove from DOM after animation
+                        setTimeout(() => {
+                            introOverlay.style.display = 'none';
+                        }, 300);
+                    }, 1000);
+                }
+            }
+            
+            typeWriter();
+        });
+
         // Generate a unique session ID
         const sessionId = Math.random().toString(36).substring(2);
         let isTyping = false;
@@ -522,6 +625,9 @@ body {
         async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
+
+            // Hide intro overlay
+            document.getElementById('intro-overlay').classList.add('hide');
 
             // Add user message
             addMessage('user', message);
