@@ -3,15 +3,19 @@ import cors from 'cors';
 import Groq from 'groq-sdk';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const groq = new Groq({
-    apiKey: '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'
+    apiKey: process.env.GROQ_API_KEY
 });
 
 app.use(cors());
