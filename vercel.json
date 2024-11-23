@@ -8,11 +8,6 @@
     ],
     "routes": [
         {
-            "src": "/chat",
-            "methods": ["POST"],
-            "dest": "server.js"
-        },
-        {
             "src": "/(.*)",
             "dest": "server.js"
         }
