@@ -4,364 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IzhyAI Chat</title>
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        :root {
-            --bg-color: #343541;
-            --chat-bg: #444654;
-            --user-msg-bg: #343541;
-            --assistant-msg-bg: #444654;
-            --text-color: #ececf1;
-            --input-bg: #40414f;
-            --border-color: #565869;
-            --font-size: 0.95rem;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.5;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding-bottom: 80px;
-        }
-
-        .header {
-            display: flex;
-            align-items: center;
-            padding: 1rem 2rem;
-            background-color: var(--bg-color);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .header h1 {
-            font-size: 2rem;
-            margin: 0;
-            background: linear-gradient(45deg, #5436DA, #19c37d);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .header p {
-            margin-left: 1rem;
-            opacity: 0.8;
-            font-size: 0.85rem;
-        }
-
-        #chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            max-width: 1000px;
-            margin: 0 auto;
-            width: 100%;
-            padding: 0;
-            position: relative;
-        }
-
-        #messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem 0;
-        }
-
-        .message {
-            padding: 1rem;
-            animation: fadeIn 0.3s ease-out;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            gap: 1rem;
-            transition: background-color 0.3s ease;
-        }
-
-        .message.user {
-            background-color: var(--user-msg-bg);
-        }
-
-        .message.assistant {
-            background-color: var(--assistant-msg-bg);
-        }
-
-        .message-content {
-            flex: 1;
-            font-size: var(--font-size);
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-            white-space: pre-wrap;
-        }
-
-        .avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .user .avatar {
-            background-color: #5436DA;
-        }
-
-        .assistant .avatar {
-            background-color: #19c37d;
-        }
-
-        #input-container {
-            padding: 1rem;
-            background-color: var(--bg-color);
-            border-top: 1px solid var(--border-color);
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-        }
-
-        #input-box {
-            display: flex;
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        #user-input {
-            flex: 1;
-            padding: 0.75rem 3rem 0.75rem 1rem;
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-color);
-            font-size: var(--font-size);
-            resize: none;
-            height: 52px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        #send-button {
-            position: absolute;
-            right: 10px;
-            bottom: 10px;
-            background: none;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            padding: 8px;
-            opacity: 0.7;
-            transition: opacity 0.3s ease;
-            font-size: 1.2rem;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #send-button:hover {
-            opacity: 1;
-        }
-
-        .typing-indicator {
-            padding: 1rem;
-            background-color: var(--assistant-msg-bg);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .typing-bubble {
-            width: 8px;
-            height: 8px;
-            background-color: var(--text-color);
-            border-radius: 50%;
-            animation: bubblePulse 1s infinite;
-            opacity: 0.5;
-        }
-
-        .typing-bubble:nth-child(2) { animation-delay: 0.2s; }
-        .typing-bubble:nth-child(3) { animation-delay: 0.4s; }
-
-        .actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .message:hover .actions {
-            opacity: 1;
-        }
-
-        .action-button {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            opacity: 0.8;
-            transition: all 0.2s ease;
-        }
-
-        .action-button:hover {
-            opacity: 1;
-            background-color: var(--input-bg);
-        }
-
-        #settings-button {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            padding: 0.5rem;
-            opacity: 0.7;
-            transition: opacity 0.3s ease;
-            z-index: 1000;
-        }
-
-        #settings-button:hover {
-            opacity: 1;
-        }
-
-        .settings-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: var(--chat-bg);
-            padding: 2rem;
-            border-radius: 8px;
-            z-index: 1001;
-            min-width: 300px;
-            display: none;
-        }
-
-        .settings-popup.show {
-            display: block;
-            animation: fadeIn 0.2s ease-out;
-        }
-
-        .settings-popup h3 {
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-
-        .settings-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .settings-group:last-child {
-            margin-bottom: 0;
-        }
-
-        .settings-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .settings-group select {
-            width: 100%;
-            padding: 0.5rem;
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            border-radius: 4px;
-        }
-
-        .font-size-controls {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-
-        .font-size-button {
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-color);
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .font-size-button:hover {
-            background-color: var(--border-color);
-        }
-
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
-
-        .overlay.show {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes bubblePulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.2); opacity: 0.8; }
-        }
-
-        /* Mobile Responsiveness */
-        @media (max-width: 768px) {
-            #chat-container {
-                padding: 0;
-            }
-
-            .message-content {
-                font-size: 0.9rem;
-            }
-
-            #input-container {
-                padding: 0.75rem;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="header">
         <h1>IzhyAi</h1>
-        <p>by izhan</p>
+        <p>by izhaan</p>
     </div>
+
     <button id="settings-button">
         <i class="fas fa-cog"></i>
     </button>
 
-    <div class="overlay"></div>
+    <div id="chat-container">
+        <div id="messages"></div>
+    </div>
+
+    <div id="input-container">
+        <div id="input-box">
+            <textarea id="user-input" placeholder="Type your message..." rows="1"></textarea>
+            <button id="send-button">
+                <span>Send</span>
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
     <div class="settings-popup">
+        <h3>Settings</h3>
         <div class="settings-group">
-            <label>Response Length:</label>
+            <label for="response-length">Response Length</label>
             <select id="response-length">
                 <option value="short">Short</option>
                 <option value="medium" selected>Medium</option>
@@ -369,151 +42,100 @@
             </select>
         </div>
         <div class="settings-group">
-            <label>Font Size:</label>
+            <label>Font Size</label>
             <div class="font-size-controls">
-                <button class="font-size-button" onclick="changeFontSize('decrease')">A-</button>
-                <button class="font-size-button" onclick="changeFontSize('reset')">Reset</button>
-                <button class="font-size-button" onclick="changeFontSize('increase')">A+</button>
+                <button class="font-size-button" data-action="decrease">A-</button>
+                <button class="font-size-button" data-action="reset">Reset</button>
+                <button class="font-size-button" data-action="increase">A+</button>
             </div>
         </div>
     </div>
 
-    <div id="chat-container">
-        <div id="messages"></div>
-        <div id="input-container">
-            <div id="input-box">
-                <textarea 
-                    id="user-input" 
-                    placeholder="Type your message..."
-                    rows="1"
-                ></textarea>
-                <button id="send-button">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
-    </div>
+    <div class="overlay"></div>
 
     <script>
-        const messagesDiv = document.getElementById('messages');
+        // Generate a unique session ID
+        const sessionId = Math.random().toString(36).substring(2);
+        let isTyping = false;
+
+        // DOM Elements
+        const messagesContainer = document.getElementById('messages');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
         const settingsButton = document.getElementById('settings-button');
         const settingsPopup = document.querySelector('.settings-popup');
         const overlay = document.querySelector('.overlay');
         const responseLengthSelect = document.getElementById('response-length');
-        let isTyping = false;
+        const fontSizeButtons = document.querySelectorAll('.font-size-button');
 
-        // Generate a session ID
-        const sessionId = Date.now().toString();
+        // Settings
+        let settings = {
+            responseLength: 'medium',
+            fontSize: 0.95 // rem
+        };
 
-        function toggleSettings() {
-            const settingsPopup = document.getElementById('settings-popup');
-            const overlay = document.getElementById('overlay');
-            
-            if (settingsPopup.style.display === 'block') {
-                settingsPopup.style.display = 'none';
-                overlay.style.display = 'none';
-            } else {
-                settingsPopup.style.display = 'block';
-                overlay.style.display = 'block';
-            }
-        }
-
-        function changeFontSize(action) {
-            const root = document.documentElement;
-            const currentSize = parseFloat(getComputedStyle(root).getPropertyValue('--font-size'));
-            
-            let newSize;
-            switch(action) {
-                case 'increase':
-                    newSize = Math.min(currentSize + 0.1, 1.35); // Max size 1.35rem
-                    break;
-                case 'decrease':
-                    newSize = Math.max(currentSize - 0.1, 0.75); // Min size 0.75rem
-                    break;
-                case 'reset':
-                    newSize = 0.95; // Default size
-                    break;
-            }
-            
-            root.style.setProperty('--font-size', `${newSize}rem`);
-        }
-
+        // Event Listeners
+        userInput.addEventListener('input', adjustTextareaHeight);
+        userInput.addEventListener('keydown', handleKeyPress);
+        sendButton.addEventListener('click', sendMessage);
         settingsButton.addEventListener('click', toggleSettings);
         overlay.addEventListener('click', toggleSettings);
+        responseLengthSelect.addEventListener('change', updateResponseLength);
+        fontSizeButtons.forEach(button => {
+            button.addEventListener('click', handleFontSize);
+        });
 
+        // Functions
         function adjustTextareaHeight() {
             userInput.style.height = 'auto';
-            userInput.style.height = Math.min(userInput.scrollHeight, 200) + 'px';
+            userInput.style.height = (userInput.scrollHeight) + 'px';
         }
 
-        userInput.addEventListener('input', adjustTextareaHeight);
-
-        function addTypingIndicator() {
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'typing-indicator';
-            typingDiv.innerHTML = `
-                <div class="avatar">AI</div>
-                <div style="display: flex; gap: 4px;">
-                    <div class="typing-bubble"></div>
-                    <div class="typing-bubble"></div>
-                    <div class="typing-bubble"></div>
-                </div>
-            `;
-            messagesDiv.appendChild(typingDiv);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            return typingDiv;
-        }
-
-        function showTypingIndicator() {
-            isTyping = true;
-            return addTypingIndicator();
-        }
-
-        function hideTypingIndicator() {
-            isTyping = false;
-            const typingIndicator = document.querySelector('.typing-indicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
             }
         }
 
         async function sendMessage() {
             const message = userInput.value.trim();
-            const responseLength = responseLengthSelect.value;
+            if (!message) return;
 
-            if (!message || isTyping) return;
-
-            userInput.value = '';
-            userInput.style.height = '52px';
+            // Add user message
             addMessage('user', message);
-            
-            const typingIndicator = showTypingIndicator();
+            userInput.value = '';
+            adjustTextareaHeight();
+
+            // Show typing indicator
+            showTypingIndicator();
 
             try {
                 const response = await fetch('/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
                         message,
-                        responseLength,
-                        sessionId
-                    }),
+                        sessionId,
+                        responseLength: settings.responseLength
+                    })
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.details || errorData.error || 'Network response was not ok');
+                    throw new Error('Failed to get response');
                 }
-                
+
                 const data = await response.json();
+                
+                // Hide typing indicator and add AI response
                 hideTypingIndicator();
                 addMessage('assistant', data.response);
             } catch (error) {
                 console.error('Error:', error);
                 hideTypingIndicator();
-                addMessage('assistant', `Error: ${error.message}`);
+                addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
             }
         }
 
@@ -523,97 +145,131 @@
             
             const avatar = document.createElement('div');
             avatar.className = 'avatar';
-            avatar.textContent = role === 'user' ? 'U' : 'AI';
+            avatar.textContent = role === 'user' ? 'U' : 'A';
             
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
-            contentDiv.textContent = content;
-            
-            messageDiv.appendChild(avatar);
-            
-            const rightSection = document.createElement('div');
-            rightSection.style.flex = '1';
-            rightSection.appendChild(contentDiv);
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.textContent = content;
+
+            const actions = document.createElement('div');
+            actions.className = 'actions';
             
             if (role === 'assistant') {
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'actions';
+                const copyButton = createActionButton('Copy', 'copy');
+                const regenerateButton = createActionButton('Regenerate', 'regenerate');
                 
-                const copyBtn = document.createElement('button');
-                copyBtn.className = 'action-button';
-                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
-                copyBtn.onclick = () => {
-                    navigator.clipboard.writeText(content);
-                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied';
-                    setTimeout(() => {
-                        copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy';
-                    }, 2000);
-                };
-                
-                const regenBtn = document.createElement('button');
-                regenBtn.className = 'action-button';
-                regenBtn.innerHTML = '<i class="fas fa-redo"></i> Regenerate';
-                regenBtn.onclick = () => regenerateResponse(messageDiv, content);
-                
-                actionsDiv.appendChild(copyBtn);
-                actionsDiv.appendChild(regenBtn);
-                rightSection.appendChild(actionsDiv);
+                actions.appendChild(copyButton);
+                actions.appendChild(regenerateButton);
+                messageContent.appendChild(actions);
             }
-            
-            messageDiv.appendChild(rightSection);
-            messageDiv.style.opacity = '0';
-            
-            messagesDiv.appendChild(messageDiv);
-            
-            // Trigger reflow to enable transition
-            messageDiv.offsetHeight;
-            messageDiv.style.opacity = '1';
-            
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        async function regenerateResponse(messageDiv, originalContent) {
-            const responseLength = responseLengthSelect.value;
+        function createActionButton(text, action) {
+            const button = document.createElement('button');
+            button.className = 'action-button';
+            button.textContent = text;
+            button.onclick = () => handleAction(action, button);
+            return button;
+        }
 
-            showTypingIndicator();
+        function handleAction(action, button) {
+            const messageContent = button.closest('.message-content');
+            const text = messageContent.firstChild.textContent;
 
-            try {
-                const response = await fetch('/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        message: "Please regenerate the following response with a different approach: " + originalContent,
-                        responseLength,
-                        sessionId
-                    }),
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.details || errorData.error || 'Network response was not ok');
+            if (action === 'copy') {
+                navigator.clipboard.writeText(text)
+                    .then(() => {
+                        const originalText = button.textContent;
+                        button.textContent = 'Copied!';
+                        setTimeout(() => button.textContent = originalText, 2000);
+                    })
+                    .catch(err => console.error('Failed to copy:', err));
+            } else if (action === 'regenerate') {
+                // Remove all messages after this one
+                let currentMessage = button.closest('.message');
+                while (currentMessage.nextElementSibling) {
+                    currentMessage.nextElementSibling.remove();
                 }
-
-                const data = await response.json();
-                hideTypingIndicator();
                 
-                // Update the message content
-                const contentDiv = messageDiv.querySelector('.message-content');
-                contentDiv.textContent = data.response;
-            } catch (error) {
-                console.error('Error:', error);
-                hideTypingIndicator();
-                addMessage('assistant', `Error regenerating response: ${error.message}`);
+                // Find the user message before this assistant message
+                const prevMessage = currentMessage.previousElementSibling;
+                if (prevMessage && prevMessage.classList.contains('user')) {
+                    const userMessage = prevMessage.querySelector('.message-content').textContent;
+                    currentMessage.remove();
+                    userInput.value = userMessage;
+                    sendMessage();
+                }
             }
         }
 
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+        function showTypingIndicator() {
+            if (isTyping) return;
+            isTyping = true;
 
-        sendButton.addEventListener('click', sendMessage);
+            const indicator = document.createElement('div');
+            indicator.className = 'typing-indicator';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = 'A';
+            
+            const bubbles = document.createElement('div');
+            bubbles.style.display = 'flex';
+            bubbles.style.gap = '4px';
+            
+            for (let i = 0; i < 3; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'typing-bubble';
+                bubbles.appendChild(bubble);
+            }
+
+            indicator.appendChild(avatar);
+            indicator.appendChild(bubbles);
+            messagesContainer.appendChild(indicator);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.querySelector('.typing-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+            isTyping = false;
+        }
+
+        function toggleSettings() {
+            settingsPopup.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        function updateResponseLength(e) {
+            settings.responseLength = e.target.value;
+        }
+
+        function handleFontSize(e) {
+            const action = e.target.dataset.action;
+            const root = document.documentElement;
+            const currentSize = parseFloat(getComputedStyle(root).getPropertyValue('--font-size'));
+            
+            switch (action) {
+                case 'increase':
+                    settings.fontSize = Math.min(currentSize + 0.05, 1.2);
+                    break;
+                case 'decrease':
+                    settings.fontSize = Math.max(currentSize - 0.05, 0.8);
+                    break;
+                case 'reset':
+                    settings.fontSize = 0.95;
+                    break;
+            }
+            
+            root.style.setProperty('--font-size', `${settings.fontSize}rem`);
+        }
     </script>
 </body>
 </html>
