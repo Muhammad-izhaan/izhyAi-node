@@ -14,6 +14,12 @@ const __dirname = dirname(__filename);
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Check if API key is available
+if (!process.env.GROQ_API_KEY) {
+    console.error('GROQ_API_KEY is not set in environment variables');
+    process.exit(1);
+}
+
 const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY
 });
@@ -29,6 +35,12 @@ app.post('/chat', async (req, res) => {
     try {
         const { message, responseLength } = req.body;
         
+        if (!message) {
+            return res.status(400).json({ 
+                error: 'Message is required' 
+            });
+        }
+
         // Configure max tokens based on response length
         let maxTokens;
         let systemInstruction;
@@ -38,7 +50,7 @@ app.post('/chat', async (req, res) => {
                 systemInstruction = "Provide a very brief, concise response in 1-2 sentences maximum.";
                 break;
             case 'medium':
-                maxTokens = 250;
+                maxTokens = 300;
                 systemInstruction = "Provide a balanced response in 2-4 sentences.";
                 break;
             case 'long':
@@ -46,7 +58,7 @@ app.post('/chat', async (req, res) => {
                 systemInstruction = "Provide a detailed response but stay focused on the main points.";
                 break;
             default:
-                maxTokens = 250;
+                maxTokens = 300;
                 systemInstruction = "Provide a balanced response in 2-4 sentences.";
         }
 
@@ -71,7 +83,11 @@ app.post('/chat', async (req, res) => {
             stream: false,
         });
 
-        const response = completion.choices[0]?.message?.content || "No response generated";
+        if (!completion.choices || !completion.choices[0]) {
+            throw new Error('No response from Groq API');
+        }
+
+        const response = completion.choices[0].message.content;
         
         // Add AI response to conversation history
         conversationHistory.push({
@@ -81,8 +97,13 @@ app.post('/chat', async (req, res) => {
 
         res.json({ response });
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'An error occurred while processing your request.' });
+        console.error('Error in /chat endpoint:', error);
+        
+        // Send a more detailed error message
+        res.status(500).json({ 
+            error: 'Error processing request',
+            details: error.message
+        });
     }
 });
 
@@ -91,5 +112,6 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server running on port ${port}`);
+    console.log('API Key status:', process.env.GROQ_API_KEY ? 'Present' : 'Missing');
 });

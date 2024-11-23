@@ -548,7 +548,10 @@
                     }),
                 });
 
-                if (!response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.details || errorData.error || 'Network response was not ok');
+                }
                 
                 const data = await response.json();
                 hideTypingIndicator();
@@ -556,7 +559,7 @@
             } catch (error) {
                 console.error('Error:', error);
                 hideTypingIndicator();
-                addMessage('assistant', 'Sorry, there was an error processing your request.');
+                addMessage('assistant', `Error: ${error.message}`);
             }
         }
 
@@ -587,7 +590,7 @@
                 const regenBtn = document.createElement('button');
                 regenBtn.className = 'action-button';
                 regenBtn.innerHTML = '<i class="fas fa-redo"></i> Regenerate';
-                regenBtn.onclick = () => regenerateResponse(content);
+                regenBtn.onclick = () => regenerateResponse(messageDiv, content);
                 
                 actionsDiv.appendChild(copyBtn);
                 actionsDiv.appendChild(regenBtn);
@@ -604,8 +607,7 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        async function regenerateResponse(originalContent) {
-            const lengthSelect = document.getElementById('length-select');
+        async function regenerateResponse(messageDiv, originalContent) {
             const responseLength = lengthSelect.value;
 
             showTypingIndicator();
@@ -620,15 +622,21 @@
                     }),
                 });
 
-                if (!response.ok) throw new Error('Network response was not ok');
-                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.details || errorData.error || 'Network response was not ok');
+                }
+
                 const data = await response.json();
                 hideTypingIndicator();
-                addMessage('assistant', data.response);
+                
+                // Update the message content
+                const contentDiv = messageDiv.querySelector('.message-text');
+                contentDiv.textContent = data.response;
             } catch (error) {
                 console.error('Error:', error);
                 hideTypingIndicator();
-                addMessage('assistant', 'Sorry, there was an error regenerating the response.');
+                addMessage('assistant', `Error regenerating response: ${error.message}`);
             }
         }
 
