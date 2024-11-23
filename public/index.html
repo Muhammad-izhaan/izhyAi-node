@@ -14,6 +14,7 @@
             --text-color: #ececf1;
             --input-bg: #40414f;
             --border-color: #565869;
+            --font-size: 0.95rem;
         }
 
         * {
@@ -30,6 +31,30 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            background-color: var(--bg-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin: 0;
+            background: linear-gradient(45deg, #5436DA, #19c37d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header p {
+            margin-left: 1rem;
+            opacity: 0.8;
+            font-size: 0.85rem;
         }
 
         #chat-container {
@@ -68,7 +93,7 @@
 
         .message-content {
             flex: 1;
-            font-size: 0.95rem;
+            font-size: var(--font-size);
             max-width: 800px;
             margin: 0 auto;
             width: 100%;
@@ -98,7 +123,11 @@
             padding: 1rem;
             background-color: var(--bg-color);
             border-top: 1px solid var(--border-color);
-            position: relative;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
         }
 
         #input-box {
@@ -115,7 +144,7 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-color);
-            font-size: 0.95rem;
+            font-size: var(--font-size);
             resize: none;
             height: 52px;
             max-height: 200px;
@@ -130,9 +159,15 @@
             border: none;
             color: var(--text-color);
             cursor: pointer;
-            padding: 5px;
+            padding: 8px;
             opacity: 0.7;
             transition: opacity 0.3s ease;
+            font-size: 1.2rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #send-button:hover {
@@ -208,17 +243,16 @@
         }
 
         .settings-popup {
-            display: none;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             background-color: var(--chat-bg);
-            padding: 1.5rem;
+            padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             z-index: 1001;
             min-width: 300px;
+            display: none;
         }
 
         .settings-popup.show {
@@ -231,23 +265,47 @@
             font-size: 1.1rem;
         }
 
-        .settings-option {
-            margin-bottom: 1rem;
+        .settings-group {
+            margin-bottom: 1.5rem;
         }
 
-        .settings-option label {
+        .settings-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-group label {
             display: block;
             margin-bottom: 0.5rem;
             font-size: 0.9rem;
         }
 
-        .settings-option select {
+        .settings-group select {
             width: 100%;
             padding: 0.5rem;
             background-color: var(--input-bg);
             border: 1px solid var(--border-color);
             color: var(--text-color);
             border-radius: 4px;
+        }
+
+        .font-size-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .font-size-button {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .font-size-button:hover {
+            background-color: var(--border-color);
         }
 
         .overlay {
@@ -292,20 +350,31 @@
     </style>
 </head>
 <body>
+    <div class="header">
+        <h1>IzhyAi</h1>
+        <p>by izhan</p>
+    </div>
     <button id="settings-button">
         <i class="fas fa-cog"></i>
     </button>
 
     <div class="overlay"></div>
     <div class="settings-popup">
-        <h3>Chat Settings</h3>
-        <div class="settings-option">
-            <label for="response-length">Response Length</label>
+        <div class="settings-group">
+            <label>Response Length:</label>
             <select id="response-length">
                 <option value="short">Short</option>
                 <option value="medium" selected>Medium</option>
                 <option value="long">Long</option>
             </select>
+        </div>
+        <div class="settings-group">
+            <label>Font Size:</label>
+            <div class="font-size-controls">
+                <button class="font-size-button" onclick="changeFontSize('decrease')">A-</button>
+                <button class="font-size-button" onclick="changeFontSize('reset')">Reset</button>
+                <button class="font-size-button" onclick="changeFontSize('increase')">A+</button>
+            </div>
         </div>
     </div>
 
@@ -339,8 +408,36 @@
         const sessionId = Date.now().toString();
 
         function toggleSettings() {
-            settingsPopup.classList.toggle('show');
-            overlay.classList.toggle('show');
+            const settingsPopup = document.getElementById('settings-popup');
+            const overlay = document.getElementById('overlay');
+            
+            if (settingsPopup.style.display === 'block') {
+                settingsPopup.style.display = 'none';
+                overlay.style.display = 'none';
+            } else {
+                settingsPopup.style.display = 'block';
+                overlay.style.display = 'block';
+            }
+        }
+
+        function changeFontSize(action) {
+            const root = document.documentElement;
+            const currentSize = parseFloat(getComputedStyle(root).getPropertyValue('--font-size'));
+            
+            let newSize;
+            switch(action) {
+                case 'increase':
+                    newSize = Math.min(currentSize + 0.1, 1.35); // Max size 1.35rem
+                    break;
+                case 'decrease':
+                    newSize = Math.max(currentSize - 0.1, 0.75); // Min size 0.75rem
+                    break;
+                case 'reset':
+                    newSize = 0.95; // Default size
+                    break;
+            }
+            
+            root.style.setProperty('--font-size', `${newSize}rem`);
         }
 
         settingsButton.addEventListener('click', toggleSettings);
