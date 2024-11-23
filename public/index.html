@@ -536,11 +536,10 @@
             userInput.value = '';
             addMessage('user', message);
             
-            isTyping = true;
-            const typingIndicator = addTypingIndicator();
+            showTypingIndicator();
 
             try {
-                const response = await fetch('http://localhost:3000/chat', {
+                const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -552,14 +551,12 @@
                 if (!response.ok) throw new Error('Network response was not ok');
                 
                 const data = await response.json();
-                typingIndicator.remove();
+                hideTypingIndicator();
                 addMessage('assistant', data.response);
             } catch (error) {
                 console.error('Error:', error);
-                typingIndicator.remove();
+                hideTypingIndicator();
                 addMessage('assistant', 'Sorry, there was an error processing your request.');
-            } finally {
-                isTyping = false;
             }
         }
 
@@ -614,7 +611,7 @@
             showTypingIndicator();
 
             try {
-                const response = await fetch('http://localhost:3000/chat', {
+                const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
